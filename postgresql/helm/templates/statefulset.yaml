@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "app.fullName" . }}
+  labels: {{- include "chart.labels" . | nindent 4 }}
+    app: {{ include "app.fullName" . }}
+    chart: {{ template "app.chart" . }}
+    release: {{ .Release.Name | quote }}
+    heritage: {{ .Release.Service | quote }}
+spec:
+  replicas: {{ .Values.replicas }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  serviceName: {{ include "app.fullName" . }}
+  selector:
+    matchLabels:
+      app: '{{ include "app.fullName" . }}'
+      release: {{ .Release.Name | quote }}
+  updateStrategy:
+    type: {{ .Values.strategyType }}
+  template:
+    metadata:
+      labels: {{- include "chart.labels" . | nindent 8 }}
+        app: {{ include "app.fullName" . }}
+        chart: {{ template "app.chart" . }}
+        release: {{ .Release.Name | quote }}
+      annotations:
+        rollme: {{ randAlphaNum 5 | quote }}
+    spec:
+      containers:
+        - name: {{ include "app.fullName" . }}
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "app.fullName" . }}-secret
+                  key: postgres-password 
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "app.fullName" . }}-secret
+                  key: postgres-user 
+          image: {{ include "app.image" . }}:{{ .Values.images.app.imageTag | default .Chart.AppVersion }}
+          imagePullPolicy: {{ .Values.images.app.imagePullPolicy | quote }}
+          ports:
+            - containerPort: {{ .Values.app.server.port }}
+              name: {{ .Values.app.server.targetPortName }}
+          livenessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - -e
+              - |
+                exec pg_isready -U '{{ .Values.app.dbUserName }}' -h 127.0.0.1 -p '{{ .Values.app.server.port }}'
+            failureThreshold: {{ int .Values.app.livenessProbe.failureThreshold }}
+            initialDelaySeconds: {{ .Values.app.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.app.livenessProbe.periodSeconds }}
+            successThreshold: {{ .Values.app.livenessProbe.successThreshold }}
+            timeoutSeconds: {{ .Values.app.livenessProbe.timeoutSeconds }}
+          readinessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - -e
+              - |
+                exec pg_isready -U '{{ .Values.app.dbUserName }}' -h 127.0.0.1 -p '{{ .Values.app.server.port }}'
+            failureThreshold: {{ int .Values.app.readinessProbe.failureThreshold }}
+            initialDelaySeconds: {{ .Values.app.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.app.readinessProbe.periodSeconds }}
+            successThreshold: {{ .Values.app.readinessProbe.successThreshold }}
+            timeoutSeconds: {{ .Values.app.readinessProbe.timeoutSeconds }}
+          resources:
+            requests:
+              memory: '{{ .Values.app.resources.requests.memory }}'
+              cpu:  '{{ .Values.app.resources.requests.cpu }}'
+            limits:
+              memory: '{{ .Values.app.resources.limits.memory }}'
+              cpu:  '{{ .Values.app.resources.limits.cpu }}'
+          envFrom:
+            - configMapRef:
+                name: {{ include "app.fullName" . }}-config
+            - secretRef:
+                name: {{ include "app.fullName" . }}-secret
+      schedulerName: default-scheduler
+      securityContext: {}

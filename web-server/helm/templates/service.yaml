@@ -1,0 +1,24 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ include "app.fullName" . }}
+  annotations:
+    description: Service for {{ include "app.fullName" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: {{ include "app.fullName" . }}
+    name: {{ include "app.fullName" . }}
+spec:
+  ports:
+    - name: '{{ .Values.app.server.portName }}'
+      port: {{ .Values.app.server.port }}
+      protocol: '{{ .Values.app.server.protocolType }}'
+      nodePort: {{ .Values.app.server.nodePort }}
+  selector:
+    app: {{ include "app.fullName" . }}
+    chart: {{ template "app.chart" . }}
+  sessionAffinity: None
+  type: '{{ .Values.app.server.serviceType }}'
+  externalTrafficPolicy: Local
+status:
+  loadBalancer: {}

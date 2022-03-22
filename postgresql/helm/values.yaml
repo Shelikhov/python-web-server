@@ -1,0 +1,44 @@
+projectName: 'web-server'
+applicationName: 'postgresql'
+
+replicas: 1
+revisionHistoryLimit: 5
+strategyType: RollingUpdate
+
+app:
+  dbUserName: "postgres"
+  dbUserPass: "temporary_pswd"
+  server:
+    port: '5432'
+    portName: '5432-tcp'
+    targetPortName: 'tcp-postgresql'
+  resources:
+    requests:
+      memory: '300Mi'
+      cpu: '300m'
+    limits:
+      memory: '300Mi'
+      cpu: '300m'
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 10
+    successThreshold: 1
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 10
+    successThreshold: 1
+#Params of the docker registry
+images:
+  app:
+    registry: yashelik
+    repository: ''
+    imageName: 'postgresql'
+    imageTag: 12
+    imagePullPolicy: Always
+

@@ -1,0 +1,60 @@
+projectName: 'web-server'
+applicationName: 'web-server-app'
+
+replicas: 1
+revisionHistoryLimit: 5
+strategyType: RollingUpdate
+
+app:
+  database: # Params od DB where will be stored blocked client's IP addresses
+    dbhost: '172.17.0.3'
+    dbname: 'web_server'
+    dbuser: 'web_server'
+    dbpassword: 'temporary_pswd'
+  emailNotification:
+    gmailSender: ''
+    gmailPassword: ''
+    gmailReceiver: ''
+    gmailNotification: 'False' #To enable sending client IP to the mailing address (gmailReceiver) from address (gmailSender with pass gmailPassword)
+    gmailSmtpAddress: 'smtp.mail.ru' #Depends on which SMTP we will want to use (smtp.gmail.com or smtp.mail.ru or another)
+  server:
+    name: '0.0.0.0'
+    port: '8080'
+    portName: '8080-tcp'
+    nodePort: '31333'
+    serviceType: 'NodePort'
+    protocolType: 'TCP'
+  resources:
+    requests:
+      memory: '300Mi'
+      cpu: '300m'
+    limits:
+      memory: '300Mi'
+      cpu: '300m'
+  readinessProbe:
+    enabled: true
+    failureThreshold: 10
+    path: '/health/readiness'
+    scheme: 'HTTP'
+    initialDelaySeconds: 20
+    periodSeconds: 10
+    timeoutSeconds: 15
+    successThreshold: 1
+  livenessProbe:
+    enabled: true
+    failureThreshold: 10
+    path: '/health/liveness'
+    scheme: 'HTTP'
+    initialDelaySeconds: 20
+    periodSeconds: 10
+    timeoutSeconds: 15
+    successThreshold: 1
+#Params of the docker registry
+images:
+  app:
+    registry: yashelik
+    repository: ''
+    imageName: 'web-server-app'
+    imageTag: 3.8
+    imagePullPolicy: Always
+

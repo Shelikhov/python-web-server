@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "app.fullName" . }}-config
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+data:
+  SERVER_NAME: '{{ .Values.app.server.name }}'
+  SERVER_PORT: '{{ .Values.app.server.port }}'
+  DB_NAME: '{{ .Values.app.database.dbname }}'
+  DB_HOST: '{{ .Values.app.database.dbhost }}'
+  GMAIL_SENDER: '{{ .Values.app.emailNotification.gmailSender }}'
+  GMAIL_RECEIVER: '{{ .Values.app.emailNotification.gmailReceiver }}'
+  GMAIL_NOTIFICATION: '{{ .Values.app.emailNotification.gmailNotification }}'
+  GMAIL_SMTP_ADDRESS: '{{ .Values.app.emailNotification.gmailSmtpAddress }}'
