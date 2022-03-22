@@ -1,5 +1,6 @@
 ## Description 
 A Python application (web-server) with database based on PostgreSQL (postgresql) that supports services:
+
   It responds to the URL like 'http://host/?n=x' where x is a number and returns n*n;
   It responds to the URL like 'http://host/blacklisted' with conditions:
     - to return error code 444 to the visitor
