@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-server
+  namespace: default
+  labels:
+    app: web-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-server
+  template:
+    metadata:
+      labels:
+        app: web-server
+    spec:
+      containers:
+        - name: nginx
+          image: yashelik/ecs-python
+          ports:
+          - name: http
+            containerPort: 8080
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: web-server
+      volumes:
+        - name: config-volume
+          configMap:
+            name: web-server
